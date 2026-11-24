@@ -1,4 +1,20 @@
-# Nu primesc notă pentru că nu am pus titlu și descriere
+# CineDB
+
+CineDB este un catalog de filme în linia de comandă, inspirat de IMDb.
+
+Aplicația citește dintr-un set de fișiere CSV filmele, distribuția (actori și regizori) și recenziile
+utilizatorilor. Pe baza lor poate:
+
+- **căuta** un titlu după o parte din nume, fără să conteze literele mari sau mici;
+- face un **clasament pe gen**, după un *scor ponderat* (formula folosită de IMDb pentru Top 250),
+  astfel încât un titlu cu un singur vot de 10 să nu treacă automat în fața unuia cu multe note bune;
+- arăta **filmografia** unui actor sau regizor, în ordine cronologică, cu vârsta pe care o avea la lansare;
+- **adăuga recenzii** (un utilizator are o singură notă per titlu; dacă votează din nou, nota se înlocuiește);
+- **simula un vot** pe o copie a titlului, ca să vezi cum s-ar schimba nota, fără să modifici catalogul;
+- face **recomandări** unui utilizator: titluri nevotate încă, din genurile pe care le-a notat cu note mari.
+
+Clasele proiectului sunt `Persoana`, `Recenzie`, `Titlu` și `Catalog`: un `Titlu` conține un regizor,
+o distribuție și recenzii, iar `Catalog` conține titlurile și se ocupă de citire, căutare și clasamente.
 
 ### Folosiți template-ul corespunzător grupei voastre!
 
@@ -33,25 +49,25 @@ O cerință nu se consideră îndeplinită dacă este realizată doar prin cod g
 
 ### Tema 0
 
-- [ ] Nume proiect (poate fi schimbat ulterior)
-- [ ] Scurtă descriere a temei alese, ce v-ați propus să implementați
+- [x] Nume proiect (poate fi schimbat ulterior)
+- [x] Scurtă descriere a temei alese, ce v-ați propus să implementați
 
 ## Tema 1
 
 #### Cerințe
-- [ ] definirea a minim **3-4 clase** folosind compunere cu clasele definite de voi; moștenirile nu se iau în considerare aici
-- [ ] constructori de inițializare cu parametri pentru fiecare clasă
-- [ ] pentru o aceeași (singură) clasă: constructor de copiere, `operator=` de copiere, destructor
+- [x] definirea a minim **3-4 clase** folosind compunere cu clasele definite de voi; moștenirile nu se iau în considerare aici
+- [x] constructori de inițializare cu parametri pentru fiecare clasă
+- [x] pentru o aceeași (singură) clasă: constructor de copiere, `operator=` de copiere, destructor
 <!-- - [ ] pentru o altă clasă: constructor de mutare, `operator=` de mutare, destructor -->
 <!-- - [ ] pentru o altă clasă: toate cele 5 funcții membru speciale -->
-- [ ] `operator<<` pentru **toate** clasele pentru afișare (`std::ostream`) folosind compunere de apeluri cu `operator<<`
-- [ ] cât mai multe `const` (unde este cazul) și funcții `private`
-- [ ] implementarea a minim 3 funcții membru publice pentru funcționalități netriviale specifice temei alese, dintre care cel puțin 1-2 funcții mai complexe
+- [x] `operator<<` pentru **toate** clasele pentru afișare (`std::ostream`) folosind compunere de apeluri cu `operator<<`
+- [x] cât mai multe `const` (unde este cazul) și funcții `private`
+- [x] implementarea a minim 3 funcții membru publice pentru funcționalități netriviale specifice temei alese, dintre care cel puțin 1-2 funcții mai complexe
   - nu doar citiri/afișări sau adăugat/șters elemente într-un/dintr-un vector
-- [ ] scenariu de utilizare **cu sens** a claselor definite:
+- [x] scenariu de utilizare **cu sens** a claselor definite:
   - crearea de obiecte și apelarea tuturor funcțiilor membru publice în main
   - vor fi adăugate în fișierul `tastatura.txt` DOAR exemple de date de intrare de la tastatură (dacă există) pentru a acoperi cât mai multe cazuri; dacă aveți nevoie de date din fișiere, creați alte fișiere separat
-- [ ] minim 52-60% din codul propriu să fie C++, adică să aveți mai mult cod decât ce e inclus în template; testele nu se pun, nu vă luați după procentajul din interfața web; detalii la ore
+- [x] minim 52-60% din codul propriu să fie C++, adică să aveți mai mult cod decât ce e inclus în template; testele nu se pun, nu vă luați după procentajul din interfața web; detalii la ore
 - [x] `.gitattributes` configurat corect (nu trebuie făcute modificări aici)
 - [ ] tag de `git`: de exemplu `v0.1`
 - [ ] serviciu de integrare continuă (CI) cu **toate bifele**; exemplu: GitHub Actions
@@ -210,5 +226,10 @@ The [template repository](https://github.com/mcmarius/oop-template) itself is li
 - [random](https://github.com/ilqvya/random/tree/4271e1c82f1c954d128289b86fa068f76e3b9c76) (MIT)
 - [rlutil](https://github.com/tapio/rlutil/tree/821fdca0191b314ee07b0fad2abe4ea973e45575) (WTFPL)
 - [csv-parser](https://github.com/vincentlaucsb/csv-parser/tree/5a7cc8ff97d23f475adb220f6d268cfd4f843ea2) v5.4.0 (MIT)
+  - folosită în `src/Catalog.cpp` pentru citirea fișierelor `assets/titluri.csv`, `assets/distributie.csv` și `assets/recenzii.csv`
 - [date](https://github.com/HowardHinnant/date/tree/95d2ec962ce8ce0e4a830eef8ac2a88460c2a9f2) (MIT)
-- adăugați trimiteri **detaliate** către resursele externe care v-au ajutat sau pe care le-ați folosit
+- Datele din `assets/` sunt scrise de mână pentru acest proiect: titlurile, anii, regizorii și actorii sunt
+  informații publice despre filme reale, iar utilizatorii, notele și textele recenziilor sunt inventate.
+- Scorul din clasamente folosește formula de scor ponderat (*weighted rating*) făcută publică de IMDb pentru
+  Top 250: `(v / (v + m)) * R + (m / (v + m)) * C`, unde `R` este media titlului, `v` numărul de voturi,
+  `m` numărul minim de voturi luat în calcul și `C` media tuturor notelor din catalog.

@@ -1,3 +1,54 @@
+1
+2
+nolan
+2
+interstellar
+2
+matrix
+3
+SF
+3
+3
+drama
+0
+3
+Horror
+2
+4
+Leonardo DiCaprio
+4
+Christopher Nolan
+4
+Brad Pitt
 5
-11 22 33 44 55
-a
+Dune
+ana
+10
+Cel mai frumos desert
+5
+Dune
+ana
+6
+Mi-am schimbat parerea
+5
+Avatar
+ana
+9
+Albastru
+5
+Dune
+ana
+15
+6
+shrek
+1
+6
+titanic
+7
+ana
+7
+mihai
+7
+cineva nou
+9
+0

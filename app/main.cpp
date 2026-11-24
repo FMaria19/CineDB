@@ -1,107 +1,192 @@
+#include <cstddef>
+#include <iomanip>
 #include <iostream>
-#include <array>
-#include <cctype>
+#include <sstream>
+#include <string>
+#include <vector>
 
-#include <csv.hpp>
-#include <date.h>
+#include "Catalog.h"
 
-#include "Example.h"
+namespace {
 
+// Afiseaza un mesaj si citeste o linie intreaga de la tastatura (poate contine spatii).
+std::string citesteLinie(const std::string& mesaj) {
+    std::cout << mesaj;
+    std::string linie;
+    std::getline(std::cin, linie);
+    if (!linie.empty() && linie.back() == '\r') {   // Enter-ul de pe Windows lasa un '\r'
+        linie.pop_back();
+    }
+    return linie;
+}
+
+// Transforma textul in numar. Intoarce 0 daca textul nu este un numar.
+int laNumar(const std::string& text) {
+    std::istringstream sin(text);
+    int numar = 0;
+    if (!(sin >> numar)) {
+        return 0;
+    }
+    return numar;
+}
+
+// Citeste o nota si verifica daca e intre NOTA_MINIMA si NOTA_MAXIMA.
+// Intoarce 0 (si afiseaza un mesaj) daca nota nu e valida.
+int citesteNota(const std::string& mesaj) {
+    const int nota = laNumar(citesteLinie(mesaj));
+    if (nota < Recenzie::NOTA_MINIMA || nota > Recenzie::NOTA_MAXIMA) {
+        std::cout << "Nota trebuie sa fie intre " << Recenzie::NOTA_MINIMA << " si "
+                  << Recenzie::NOTA_MAXIMA << ".\n";
+        return 0;
+    }
+    return nota;
+}
+
+void afiseazaLista(const std::vector<Titlu>& lista, const Catalog& catalog) {
+    if (lista.empty()) {
+        std::cout << "  (niciun rezultat)\n";
+        return;
+    }
+    int pozitie = 1;
+    for (const Titlu& titlu : lista) {
+        std::cout << "  " << pozitie << ". " << titlu.getNume() << " (" << titlu.getAn()
+                  << ", " << titlu.getGen() << ") - scor " << catalog.scorPonderat(titlu) << "\n";
+        ++pozitie;
+    }
+}
+
+void afiseazaMeniu() {
+    std::cout << "\n========== CineDB ==========\n"
+              << "1. Toate titlurile\n"
+              << "2. Cauta un titlu\n"
+              << "3. Top pe gen\n"
+              << "4. Celebritati: filmografie\n"
+              << "5. Adauga o recenzie\n"
+              << "6. Simuleaza un vot (fara salvare)\n"
+              << "7. Recomandari pentru mine\n"
+              << "0. Iesire\n";
+}
+
+void meniuCautare(const Catalog& catalog) {
+    const std::string text = citesteLinie("Cauta: ");
+    const std::vector<Titlu> rezultate = catalog.cauta(text);
+    if (rezultate.empty()) {
+        std::cout << "Nu am gasit niciun titlu care sa contina \"" << text << "\".\n";
+        return;
+    }
+    for (const Titlu& titlu : rezultate) {
+        std::cout << titlu << "\n";
+    }
+}
+
+void meniuTop(const Catalog& catalog) {
+    constexpr int TOP_IMPLICIT = 3;   // folosit cand utilizatorul nu da un numar valid
+
+    const std::string gen = citesteLinie("Gen (SF, Drama, Comedie, Actiune, ...): ");
+    int cate = laNumar(citesteLinie("Cate titluri? "));
+    if (cate <= 0) {
+        cate = TOP_IMPLICIT;
+    }
+    std::cout << "Top " << cate << " " << gen << ":\n";
+    afiseazaLista(catalog.topDupaGen(gen, static_cast<std::size_t>(cate)), catalog);
+}
+
+void meniuFilmografie(const Catalog& catalog) {
+    const std::string nume = citesteLinie("Numele actorului sau regizorului: ");
+    std::cout << "Filmografia lui " << nume << ":\n";
+    afiseazaLista(catalog.filmografie(nume), catalog);
+}
+
+void meniuRecenzie(Catalog& catalog) {
+    const std::string titlu = citesteLinie("Titlul exact: ");
+    const std::string utilizator = citesteLinie("Utilizator: ");
+    const int nota = citesteNota("Nota: ");
+    if (nota == 0) {
+        return;
+    }
+    const std::string text = citesteLinie("Parerea ta: ");
+
+    const Recenzie recenzie(utilizator, nota, text);
+    if (catalog.adaugaRecenzie(titlu, recenzie)) {
+        std::cout << "Am salvat recenzia: " << recenzie << "\n";
+    } else {
+        std::cout << "Nu exista titlul \"" << titlu << "\".\n";
+    }
+}
+
+// Arata cum s-ar schimba nota unui titlu, lucrand pe o COPIE.
+// Aici se vad constructorul de copiere si operator= din clasa Titlu.
+void meniuSimulare(const Catalog& catalog) {
+    const std::vector<Titlu> rezultate = catalog.cauta(citesteLinie("Titlu: "));
+    if (rezultate.empty()) {
+        std::cout << "Nu am gasit titlul.\n";
+        return;
+    }
+    const int nota = citesteNota("Ce nota ai da? ");
+    if (nota == 0) {
+        return;
+    }
+
+    Titlu copie(rezultate[0]);                                // constructor de copiere
+    copie.adaugaRecenzie(Recenzie("vot simulat", nota, ""));
+    std::cout << copie.getNume() << ": nota medie ar trece de la "
+              << rezultate[0].notaMedie() << " la " << copie.notaMedie() << "\n";
+
+    copie = rezultate[0];                                     // operator=: anulam votul
+    std::cout << "Votul simulat a fost anulat. Nota ramane " << copie.notaMedie()
+              << " (voturi: " << copie.numarVoturi() << ").\n";
+}
+
+void meniuRecomandari(const Catalog& catalog) {
+    constexpr std::size_t NUMAR_RECOMANDARI = 3;
+
+    const std::string utilizator = citesteLinie("Utilizator: ");
+    std::cout << "Recomandari pentru " << utilizator << ":\n";
+    afiseazaLista(catalog.recomandari(utilizator, NUMAR_RECOMANDARI), catalog);
+}
+
+} // namespace
 
 int main() {
-    std::cout << "Hello, world!\n";
-    Example e1;
-    e1.add(3);
-    e1.g();
-    std::array<int, 100> v{};
-    int nr;
-    std::cout << "Introduceți nr: ";
     /////////////////////////////////////////////////////////////////////////
-    /// Observație: dacă aveți nevoie să citiți date de intrare de la tastatură,
-    /// dați exemple de date de intrare folosind fișierul tastatura.txt
-    /// Trebuie să aveți în fișierul tastatura.txt suficiente date de intrare
-    /// (în formatul impus de voi) astfel încât execuția programului să se încheie.
-    /// De asemenea, trebuie să adăugați în acest fișier date de intrare
-    /// pentru cât mai multe ramuri de execuție.
-    /// Dorim să facem acest lucru pentru a automatiza testarea codului, fără să
-    /// mai pierdem timp de fiecare dată să introducem de la zero aceleași date de intrare.
-    ///
-    /// Pe GitHub Actions (bife), fișierul tastatura.txt este folosit
-    /// pentru a simula date introduse de la tastatură.
-    /// Bifele verifică dacă programul are erori de compilare, erori de memorie și memory leaks.
-    ///
-    /// Dacă nu puneți în tastatura.txt suficiente date de intrare, îmi rezerv dreptul să vă
-    /// testez codul cu ce date de intrare am chef și să nu pun notă dacă găsesc vreun bug.
-    /// Impun această cerință ca să învățați să faceți un demo și să arătați părțile din
-    /// program care merg (și să le evitați pe cele care nu merg).
-    ///
+    /// Datele de intrare pentru meniu sunt in tastatura.txt (folosit de bife pe GitHub).
+    /// Filmele sunt citite din alte fisiere: assets/titluri.csv, distributie.csv, recenzii.csv.
     /////////////////////////////////////////////////////////////////////////
-    std::cin >> nr;
-    /////////////////////////////////////////////////////////////////////////
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "v[" << i << "] = ";
-        std::cin >> v[i];
+    std::cout << std::fixed << std::setprecision(2);   // notele se afiseaza cu 2 zecimale
+
+    Catalog catalog;
+    if (!catalog.incarcaDinFolder("assets")) {
+        std::cout << "Nu pot citi fisierele CSV din folderul assets\n";
+        return 1;
     }
-    std::cout << "\n\n";
-    std::cout << "Am citit de la tastatură " << nr << " elemente:\n";
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "- " << v[i] << "\n";
-    }
-    ///////////////////////////////////////////////////////////////////////////
-    /// Pentru date citite din fișier, NU folosiți tastatura.txt. Creați-vă voi
-    /// alt fișier propriu cu ce alt nume doriți.
-    /// Exemplu:
-    /// std::ifstream fis("date.txt");
-    /// for(int i = 0; i < nr2; ++i)
-    ///     fis >> v2[i];
-    ///
-    ///////////////////////////////////////////////////////////////////////////
+    std::cout << "Am incarcat " << catalog.numarTitluri() << " titluri.\n";
 
-    std::cin.ignore(); // clear last \n
+    while (true) {
+        afiseazaMeniu();
+        const std::string optiune = citesteLinie("Optiune: ");
+        if (!std::cin || optiune == "0") {   // !std::cin = s-au terminat datele de intrare
+            break;
+        }
 
-    std::cout << "-----------------------------------------------\n";
-
-    e1.demo();
-
-    ///////////////////////////////////////////////////////////////////////////
-    ///           Exemplu fișier CSV (comma separated value)                ///
-    ///////////////////////////////////////////////////////////////////////////
-    using namespace csv;
-    CSVReader reader{"assets/date.csv"};
-    for (CSVRow& row : reader) {
-        std::cout << "nume: " << row["nume"].get_sv() << "\n";
-        // std::cout << "nume: " << row["nume"].get<>() << "\n";
+        if (optiune == "1") {
+            std::cout << catalog;
+        } else if (optiune == "2") {
+            meniuCautare(catalog);
+        } else if (optiune == "3") {
+            meniuTop(catalog);
+        } else if (optiune == "4") {
+            meniuFilmografie(catalog);
+        } else if (optiune == "5") {
+            meniuRecenzie(catalog);
+        } else if (optiune == "6") {
+            meniuSimulare(catalog);
+        } else if (optiune == "7") {
+            meniuRecomandari(catalog);
+        } else {
+            std::cout << "Optiune invalida.\n";
+        }
     }
 
-    std::cout << "-----------------------------------------------\n";
-
-    ///////////////////////////////////////////////////////////////////////////
-    ///              Exemplu de lucru cu date calendaristice                ///
-    ///////////////////////////////////////////////////////////////////////////
-    using namespace std::chrono;
-    using namespace date;
-    using date::sys_days;
-    using date::days;
-    using date::weeks;
-    using date::months;
-    auto d1 = 2022_y/10/01;
-    auto d2 = 2023_y/05/26;
-
-    auto dp1 = sys_days{d1};
-    auto dp2 = sys_days{d2};
-
-    std::cout << "Anul 2022-2023 are "
-              << duration<float, months::period>(dp2 - dp1).count() << " luni"
-              << " sau "
-              << duration<float, weeks::period>(dp2 - dp1).count() << " săptămâni"
-              << " sau "
-              << duration<float, days::period>(dp2 - dp1).count() << " zile"
-              << ", adică "
-              << floor<months>(dp2 - dp1).count() << " luni, "
-              << floor<weeks>(dp2 - dp1 - floor<months>(dp2 - dp1)).count() << " săptămâni, "
-              << floor<days>(dp2 - dp1 - floor<weeks>(dp2 - dp1)).count() - 1 << " zile."
-              << "\n";
-
-    std::cout << "-----------------------------------------------\n";
+    std::cout << "La revedere!\n";
     return 0;
 }
