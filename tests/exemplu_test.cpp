@@ -21,8 +21,10 @@ void testRecenzie() {
     assert(normala.getNota() == 8);
 
     // notele din afara intervalului sunt aduse la limite
-    assert(Recenzie("x", Recenzie::NOTA_MAXIMA + 5, "").getNota() == Recenzie::NOTA_MAXIMA);
-    assert(Recenzie("x", Recenzie::NOTA_MINIMA - 4, "").getNota() == Recenzie::NOTA_MINIMA);
+    const Recenzie preaMare("x", Recenzie::NOTA_MAXIMA + 5, "");
+    const Recenzie preaMica("x", Recenzie::NOTA_MINIMA - 4, "");
+    assert(preaMare.getNota() == Recenzie::NOTA_MAXIMA);
+    assert(preaMica.getNota() == Recenzie::NOTA_MINIMA);
 }
 
 void testTitlu() {
@@ -60,7 +62,8 @@ void testTitlu() {
 
 void testCatalog() {
     Catalog catalog(2);
-    assert(!catalog.incarcaDinFolder("folder_care_nu_exista"));
+    const bool incarcat = catalog.incarcaDinFolder("folder_care_nu_exista");
+    assert(!incarcat);
 
     Titlu a("Alfa", 2001, "SF", 90, Persoana("R1", 1960));
     a.adaugaRecenzie(Recenzie("ana", 9, ""));
@@ -102,8 +105,11 @@ void testCatalog() {
     assert(recomandate[0].getNume() == "Beta");
     assert(catalog.recomandari("nimeni", 3).empty());
 
-    assert(catalog.adaugaRecenzie("gama", Recenzie("ana", 9, "")));
-    assert(!catalog.adaugaRecenzie("Nu exista", Recenzie("ana", 9, "")));
+    const Recenzie noua("ana", 9, "");
+    const bool adaugataLaGama = catalog.adaugaRecenzie("gama", noua);
+    const bool adaugataLaInexistent = catalog.adaugaRecenzie("Nu exista", noua);
+    assert(adaugataLaGama);
+    assert(!adaugataLaInexistent);
 }
 
 } // namespace
