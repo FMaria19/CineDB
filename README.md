@@ -11,10 +11,14 @@ utilizatorilor. Pe baza lor poate:
 - arăta **filmografia** unui actor sau regizor, în ordine cronologică, cu vârsta pe care o avea la lansare;
 - **adăuga recenzii** (un utilizator are o singură notă per titlu; dacă votează din nou, nota se înlocuiește);
 - **simula un vot** pe o copie a titlului, ca să vezi cum s-ar schimba nota, fără să modifici catalogul;
-- face **recomandări** unui utilizator: titluri nevotate încă, din genurile pe care le-a notat cu note mari.
+- face **recomandări** unui utilizator: titluri nevotate încă, din genurile pe care le-a notat cu note mari;
+- propune un **film surpriză**: un titlu foarte bun, ales la întâmplare dintre cele pe care utilizatorul nu le-a votat.
 
-Clasele proiectului sunt `Persoana`, `Recenzie`, `Titlu` și `Catalog`: un `Titlu` conține un regizor,
+Scorurile apar **colorate** în consolă: verde pentru foarte bun, galben pentru bun, roșu pentru slab.
+
+Clasele proiectului sunt `Persoana`, `Recenzie`, `Titlu`, `Catalog` și `Scor`: un `Titlu` conține un regizor,
 o distribuție și recenzii, iar `Catalog` conține titlurile și se ocupă de citire, căutare și clasamente.
+`Scor` știe dacă un scor e „foarte bun” și cum se afișează colorat.
 
 ### Folosiți template-ul corespunzător grupei voastre!
 
@@ -69,8 +73,8 @@ O cerință nu se consideră îndeplinită dacă este realizată doar prin cod g
   - vor fi adăugate în fișierul `tastatura.txt` DOAR exemple de date de intrare de la tastatură (dacă există) pentru a acoperi cât mai multe cazuri; dacă aveți nevoie de date din fișiere, creați alte fișiere separat
 - [x] minim 52-60% din codul propriu să fie C++, adică să aveți mai mult cod decât ce e inclus în template; testele nu se pun, nu vă luați după procentajul din interfața web; detalii la ore
 - [x] `.gitattributes` configurat corect (nu trebuie făcute modificări aici)
-- [ ] tag de `git`: de exemplu `v0.1`
-- [ ] serviciu de integrare continuă (CI) cu **toate bifele**; exemplu: GitHub Actions
+- [x] tag de `git`: de exemplu `v0.1`
+- [x] serviciu de integrare continuă (CI) cu **toate bifele**; exemplu: GitHub Actions
 - [ ] code review #1 2 proiecte
 
 ## Tema 2
@@ -224,7 +228,9 @@ The [template repository](https://github.com/mcmarius/oop-template) itself is li
 
 - [digestpp](https://github.com/kerukuro/digestpp/tree/4beae7541f5c280389898ae6e6111028852f466a) (Unlicense)
 - [random](https://github.com/ilqvya/random/tree/4271e1c82f1c954d128289b86fa068f76e3b9c76) (MIT)
+  - folosită în `src/Catalog.cpp` (`Catalog::filmSurpriza`) pentru alegerea filmului surpriză
 - [rlutil](https://github.com/tapio/rlutil/tree/821fdca0191b314ee07b0fad2abe4ea973e45575) (WTFPL)
+  - folosită în `src/Scor.cpp` pentru colorarea scorurilor în consolă
 - [csv-parser](https://github.com/vincentlaucsb/csv-parser/tree/5a7cc8ff97d23f475adb220f6d268cfd4f843ea2) v5.4.0 (MIT)
   - folosită în `src/Catalog.cpp` pentru citirea fișierelor `assets/titluri.csv`, `assets/distributie.csv` și `assets/recenzii.csv`
 - [date](https://github.com/HowardHinnant/date/tree/95d2ec962ce8ce0e4a830eef8ac2a88460c2a9f2) (MIT)

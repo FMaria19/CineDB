@@ -1,11 +1,13 @@
 #include <cstddef>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "Catalog.h"
+#include "Scor.h"
 
 namespace {
 
@@ -50,7 +52,7 @@ void afiseazaLista(const std::vector<Titlu>& lista, const Catalog& catalog) {
     int pozitie = 1;
     for (const Titlu& titlu : lista) {
         std::cout << "  " << pozitie << ". " << titlu.getNume() << " (" << titlu.getAn()
-                  << ", " << titlu.getGen() << ") - scor " << catalog.scorPonderat(titlu) << "\n";
+                  << ", " << titlu.getGen() << ") - scor " << Scor(catalog.scorPonderat(titlu)) << "\n";
         ++pozitie;
     }
 }
@@ -64,6 +66,7 @@ void afiseazaMeniu() {
               << "5. Adauga o recenzie\n"
               << "6. Simuleaza un vot (fara salvare)\n"
               << "7. Recomandari pentru mine\n"
+              << "8. Surprinde-ma (un film bun, la intamplare)\n"
               << "0. Iesire\n";
 }
 
@@ -145,6 +148,18 @@ void meniuRecomandari(const Catalog& catalog) {
     afiseazaLista(catalog.recomandari(utilizator, NUMAR_RECOMANDARI), catalog);
 }
 
+void meniuSurpriza(const Catalog& catalog) {
+    const std::string utilizator = citesteLinie("Utilizator: ");
+    const std::optional<Titlu> film = catalog.filmSurpriza(utilizator);
+    if (!film.has_value()) {   // "cutia" e goala
+        std::cout << "Ai votat deja toate filmele foarte bune din catalog!\n";
+        return;
+    }
+    // * scoate filmul din "cutie"
+    std::cout << "In seara asta iti propun:\n" << *film
+              << "  Scor CineDB: " << Scor(catalog.scorPonderat(*film)) << "\n";
+}
+
 } // namespace
 
 int main() {
@@ -182,6 +197,8 @@ int main() {
             meniuSimulare(catalog);
         } else if (optiune == "7") {
             meniuRecomandari(catalog);
+        } else if (optiune == "8") {
+            meniuSurpriza(catalog);
         } else {
             std::cout << "Optiune invalida.\n";
         }

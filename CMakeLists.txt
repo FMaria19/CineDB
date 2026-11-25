@@ -73,6 +73,7 @@ target_sources(${MAIN_LIBRARY_NAME}
         src/Recenzie.cpp
         src/Titlu.cpp
         src/Catalog.cpp
+        src/Scor.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

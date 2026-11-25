@@ -6,6 +6,9 @@
 #include <set>
 
 #include <csv.hpp>
+#include <random.hpp>
+
+#include "Scor.h"
 
 Catalog::Catalog(int voturiMinime) : voturiMinime_(voturiMinime) {}
 
@@ -138,13 +141,11 @@ std::vector<Titlu> Catalog::recomandari(const std::string& utilizator, std::size
         }
     }
 
-    // Pasul 2: titlurile din acele genuri pe care nu le-a votat inca
-    // (notaDeLa intoarce 0, adica o nota sub minim, cand utilizatorul nu a votat).
+    // Pasul 2: titlurile din acele genuri pe care nu le-a votat inca.
     std::vector<Titlu> rezultat;
     for (const Titlu& titlu : titluri_) {
         const bool genPreferat = genuriPreferate.count(titlu.getGen()) > 0;
-        const bool nevotat = titlu.notaDeLa(utilizator) < Recenzie::NOTA_MINIMA;
-        if (genPreferat && nevotat) {
+        if (genPreferat && !aVotat(titlu, utilizator)) {
             rezultat.push_back(titlu);
         }
     }
@@ -152,6 +153,28 @@ std::vector<Titlu> Catalog::recomandari(const std::string& utilizator, std::size
     // Pasul 3: cele mai bune n dintre ele.
     ordoneazaTop(rezultat, n);
     return rezultat;
+}
+
+std::optional<Titlu> Catalog::filmSurpriza(const std::string& utilizator) const {
+    // Pasul 1: candidatii = titlurile foarte bune pe care utilizatorul nu le-a votat.
+    std::vector<Titlu> candidati;
+    for (const Titlu& titlu : titluri_) {
+        if (!aVotat(titlu, utilizator) && Scor(scorPonderat(titlu)).esteFoarteBun()) {
+            candidati.push_back(titlu);
+        }
+    }
+    if (candidati.empty()) {
+        return std::nullopt;
+    }
+
+    // Pasul 2: biblioteca random alege unul la intamplare.
+    // get(candidati) intoarce un iterator ("un deget" care arata spre un element), iar * il ia.
+    return *effolkronium::random_static::get(candidati);
+}
+
+bool Catalog::aVotat(const Titlu& titlu, const std::string& utilizator) {
+    // notaDeLa intoarce 0 (o nota sub minim) cand utilizatorul nu a votat.
+    return titlu.notaDeLa(utilizator) >= Recenzie::NOTA_MINIMA;
 }
 
 Titlu* Catalog::gaseste(const std::string& numeTitlu) {
@@ -202,7 +225,7 @@ std::string Catalog::litereMici(const std::string& text) {
 std::ostream& operator<<(std::ostream& os, const Catalog& catalog) {
     os << "=== CineDB: " << catalog.numarTitluri() << " titluri ===\n\n";
     for (const Titlu& titlu : catalog.titluri_) {
-        os << titlu << "  Scor CineDB: " << catalog.scorPonderat(titlu) << "\n\n";
+        os << titlu << "  Scor CineDB: " << Scor(catalog.scorPonderat(titlu)) << "\n\n";
     }
     return os;
 }

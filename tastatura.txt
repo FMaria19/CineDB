@@ -50,5 +50,9 @@ ana
 mihai
 7
 cineva nou
+8
+ana
+8
+cineva nou
 9
 0

@@ -2,10 +2,14 @@
 // assert() dispare cand NDEBUG este definit (Release), asa ca il anulam.
 #undef NDEBUG
 #include <cassert>
+#include <iomanip>
+#include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "Catalog.h"
+#include "Scor.h"
 
 namespace {
 
@@ -112,6 +116,41 @@ void testCatalog() {
     assert(!adaugataLaInexistent);
 }
 
+void testScor() {
+    assert(Scor(9.0).esteFoarteBun());
+    assert(!Scor(7.5).esteFoarteBun());
+
+    // scris altundeva decat pe ecran, scorul apare fara culori, doar ca numar
+    std::ostringstream text;
+    text << std::fixed << std::setprecision(2) << Scor(8.5);
+    assert(text.str() == "8.50");
+}
+
+void testFilmSurpriza() {
+    Catalog catalog(1);
+
+    Titlu bun("Delta", 2010, "SF", 90, Persoana("R1", 1960));
+    bun.adaugaRecenzie(Recenzie("ana", 10, ""));
+    bun.adaugaRecenzie(Recenzie("mihai", 10, ""));
+    bun.adaugaRecenzie(Recenzie("ioana", 10, ""));
+
+    Titlu slab("Epsilon", 2011, "SF", 90, Persoana("R2", 1960));
+    slab.adaugaRecenzie(Recenzie("ana", 2, ""));
+    slab.adaugaRecenzie(Recenzie("mihai", 2, ""));
+    slab.adaugaRecenzie(Recenzie("ioana", 2, ""));
+
+    catalog.adaugaTitlu(bun);
+    catalog.adaugaTitlu(slab);
+
+    // singurul film foarte bun nevotat de radu este Delta, deci alegerea "la intamplare" e sigura
+    const std::optional<Titlu> pentruRadu = catalog.filmSurpriza("radu");
+    assert(pentruRadu.has_value());
+    assert(pentruRadu->getNume() == "Delta");
+
+    // ana a votat deja Delta, iar Epsilon nu e foarte bun: nu ramane nimic de propus
+    assert(!catalog.filmSurpriza("ana").has_value());
+}
+
 } // namespace
 
 int main() {
@@ -119,5 +158,7 @@ int main() {
     testRecenzie();
     testTitlu();
     testCatalog();
+    testScor();
+    testFilmSurpriza();
     return 0;
 }

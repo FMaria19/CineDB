@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -42,6 +43,10 @@ public:
     // Titluri nevotate inca, din genurile la care utilizatorul a dat note mari.
     std::vector<Titlu> recomandari(const std::string& utilizator, std::size_t n) const;
 
+    // Un titlu "foarte bun", ales la intamplare dintre cele pe care utilizatorul nu le-a votat.
+    // Intoarce std::nullopt (o "cutie goala") daca nu exista niciun astfel de titlu.
+    std::optional<Titlu> filmSurpriza(const std::string& utilizator) const;
+
     friend std::ostream& operator<<(std::ostream& os, const Catalog& catalog);
 
 private:
@@ -61,6 +66,9 @@ private:
 
     // Sorteaza lista descrescator dupa scor si pastreaza doar primele n titluri.
     void ordoneazaTop(std::vector<Titlu>& lista, std::size_t n) const;
+
+    // true daca utilizatorul a dat deja o nota acestui titlu.
+    static bool aVotat(const Titlu& titlu, const std::string& utilizator);
 
     static bool existaFisier(const std::string& cale);
     static std::string litereMici(const std::string& text);
