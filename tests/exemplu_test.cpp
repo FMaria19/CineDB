@@ -117,8 +117,10 @@ void testCatalog() {
 }
 
 void testScor() {
-    assert(Scor(9.0).esteFoarteBun());
-    assert(!Scor(7.5).esteFoarteBun());
+    const Scor mare(9.0);
+    const Scor mediu(7.5);
+    assert(mare.esteFoarteBun());
+    assert(!mediu.esteFoarteBun());
 
     // scris altundeva decat pe ecran, scorul apare fara culori, doar ca numar
     std::ostringstream text;
